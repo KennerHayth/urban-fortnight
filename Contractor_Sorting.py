@@ -23,11 +23,13 @@ def main():
 
     change_list = []
 
-    Assignments = pd.read_csv(Shira.Newest_file(r"J:\Admin & Plans Unit\Recovery Systems\2. Reports\4. Data Files\FLPA Assignments"))
+    Assignments = pd.read_csv(Shira.Newest_file(r"J:\Admin & Plans Unit\Recovery Systems\2. Reports\4. Data Files\FLPA Assignments"), encoding="latin1")
 
     Assignments = Assignments[Assignments["Contact Group(s)"] == "Contractor"]
 
-    Assignments = Assignments["Grant", "County", "Applicant", "Position(s)", "Contact Email" ]
+    Assignments = Assignments[["Grant", "County", "Applicant", "Position(s)", "Contact Email"]]
+
+    print(Assignments)
 
     # define what email addresses to look for
     company_emails = {
@@ -46,18 +48,18 @@ def main():
     }
     # define where assignments should come from
     assignment_accounts = {
-        "Atkins": "Atkinstest@test.com",
-        "Hagerty": "Hagertytest@test.com",
-        "KPMG": "KPMGtest@test.com",
-        "RSM": "RSMtest@test.com",
-        "IEM": "IEMtest@test.com",
-        "EY": "EYtest@test.com",
-        "Deloitte": "Deloittetest@test.com",
-        "Horne": "Hornetest@test.com",
-        "DCMC": "DCMCtest@test.com",
-        "Tidal_Basin": "TidalBasintest@test.com",
-        "THF": "THFtest@test.com",
-        "CRI": "CRItest@test.com"
+        "Atkins": "jamelyn.trucks@atkinsrealis.com",
+        "Hagerty": "danielle.finella@hagertyconsulting.com",
+        "KPMG": "samanthasicard@kpmg.com",
+        "RSM": "regina.oliver@rsmus.com",
+        "IEM": "shaun.mcgrath@iem.com",
+        "EY": "nadya.semenova@ey.com",
+        "Deloitte": "chbreed@deloitte.com",
+        "Horne": "sam.hurst@horne.com",
+        "DCMC": "mrobinson@dcmcpartners.com",
+        "Tidal_Basin": "rwright@tidalbasin.rphc.com",
+        "THF": "bbechtel@thf-cpa.com",
+        "CRI": "lluong@cricpa.com"
     }
 
     # get the list of employees
@@ -94,22 +96,15 @@ def main():
                 change_list.append(value)
 
 
-    def execute_funcation():
+    def execute_funcations():
         for email in company_emails.keys():
             employee_df = contractor_employees(email)
             assignment_df = account_assignments(email)
             change_log(employee_df,assignment_df)
 
-        return change_list
+    execute_funcations()
 
-
-
-
-
-
-
-
-
+    return change_list
 
 
 if __name__ == "__main__":
