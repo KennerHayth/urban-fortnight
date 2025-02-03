@@ -23,7 +23,9 @@ def main():
 
     change_list = []
 
-    Assignments = pd.read_csv(Shira.Newest_file(r"J:\Admin & Plans Unit\Recovery Systems\2. Reports\4. Data Files\FLPA Assignments"), encoding="latin1")
+    # Assignments = pd.read_csv(Shira.Newest_file(r"J:\Admin & Plans Unit\Recovery Systems\2. Reports\4. Data Files\FLPA Assignments"), encoding="latin1")
+    Assignments = pd.read_csv(Shira.Newest_file(r"J:\Admin & Plans Unit\Recovery Systems\1. Systems\Python Scripts\Morning Script\modules\Kenner_Rep\Contractor_Assignments\Test cases\Assignments"), encoding="latin1")
+
 
     Assignments = Assignments[Assignments["Contact Group(s)"] == "Contractor"]
 
@@ -88,12 +90,17 @@ def main():
         for value in induviduals:
             current_assignments = Assignments[Assignments["Contact Email"] == value]
 
-            match = current_assignments[["Grant", "County", "Applicant"]].equals(default_assignments[["Grant", "County", "Applicant"]])
+            # match = current_assignments[["Grant", "County", "Applicant"]].equals(default_assignments[["Grant", "County", "Applicant"]])
+            # finding missing rows
+            missing_rows = pd.concat([default_assignments, current_assignments]).drop_duplicates(subset=['Grant', 'County', 'Applicant'], keep=False)
+            # Count missing rows
+            missing_count = len(missing_rows)
 
-            if match:
+            if missing_count == 0:
                 print (f"{value} has correct assignments")
             else:
                 change_list.append(value)
+                print(f"{value} had {missing_count} wrong assignments")
 
 
     def execute_funcations():
@@ -102,7 +109,27 @@ def main():
             assignment_df = account_assignments(email)
             change_log(employee_df,assignment_df)
 
+    def map_assignment_emails(change_list, company_emails, assignment_accounts):
+        # Ensure change_list is a DataFrame
+        if isinstance(change_list, list):
+            change_list = pd.DataFrame(change_list, columns=["Email"])
+        
+        # Create an empty column for default assignment emails
+        change_list["Default Assignment Email"] = "Not Found"
+
+        # Loop through each email and find the matching assignment email
+        for index, row in change_list.iterrows():
+            for company, domain in company_emails.items():
+                if domain in row["Email"]:  # Check if the domain exists in the email
+                    change_list.at[index, "Default Assignment Email"] = assignment_accounts.get(company, "Not Found")
+                    break  # Stop searching once a match is found
+        return change_list
+
     execute_funcations()
+
+    change_list = pd.DataFrame(change_list, columns=["Email"])
+    change_list = map_assignment_emails(change_list, company_emails, assignment_accounts)
+
 
     return change_list
 
