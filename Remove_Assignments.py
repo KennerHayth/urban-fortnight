@@ -34,10 +34,9 @@ def main(pending_changes):
 
     unassigned_users = pd.DataFrame(columns=["Name"])
 
-    # Contact_Export = pd.read_csv(Shira.Newest_file(r"J:\Admin & Plans Unit\Recovery Systems\2. Reports\4. Data Files\FLPA All Contacts"), encoding="latin1")
+    Contact_Export = pd.read_csv(Shira.Newest_file(r"J:\Admin & Plans Unit\Recovery Systems\2. Reports\4. Data Files\FLPA All Contacts"), encoding="latin1")
 
-
-    Contact_Export = pd.read_csv(Shira.Newest_file(r"J:\Admin & Plans Unit\Recovery Systems\1. Systems\Python Scripts\Morning Script\modules\Kenner_Rep\Contractor_Assignments\Test cases\Contacts"), encoding="latin1")
+    # Contact_Export = pd.read_csv(Shira.Newest_file(r"J:\Admin & Plans Unit\Recovery Systems\1. Systems\Python Scripts\Morning Script\modules\Kenner_Rep\Contractor_Assignments\Test cases\Contacts"), encoding="latin1")
 
     Contact_Export = Contact_Export.applymap(lambda x: x.strip().lower() if isinstance(x, str) else x)
     pending_changes = pending_changes.applymap(lambda x: x.strip().lower() if isinstance(x, str) else x)
@@ -60,6 +59,10 @@ def main(pending_changes):
     pending_changes["Item Link"] = pending_changes["Item Link"] + "?t=form--assignments"
     pending_changes["Assignments Link"] = pending_changes["Assignments Link"] + "?t=form--assignments"
 
+    pending_changes = pending_changes.dropna(subset=["Assignments Link"])
+
+    print(f"There are ({len(pending_changes)}) Contractors to update")
+
     pending_changes.to_csv(r"J:\Admin & Plans Unit\Recovery Systems\1. Systems\Python Scripts\Morning Script\modules\Kenner_Rep\Contractor_Assignments\Assignment Changes\Pending_Changes.csv", index=False)
 
     Functions.FLPA_sign_in(driver)
@@ -72,12 +75,30 @@ def main(pending_changes):
         Email = row["Email"]
         assignments = row["Assignments Link"]
         try:
-            Functions.delete_assignments(driver, Link,Contact_Name, unassigned_users)
-            t.sleep(2)
-            print("test")
-            Functions.copy_assignments(driver,assignments,Contact_Name,Email)
-            unassigned_users = unassigned_users[unassigned_users["Name"] != f"{Contact_Name}"]
+            driver.refresh()
+            t.sleep(3)
+            try:
+                Functions.delete_assignments(driver, Link,Contact_Name, unassigned_users)
+                Deleted = True
+            except:
+                Deleted = False
+            if Deleted == True:
+                try:
+                    t.sleep(2)
+                    # print("test")
+                    Functions.copy_assignments(driver,assignments,Contact_Name,Email)
+                    unassigned_users = unassigned_users[unassigned_users["Name"] != f"{Contact_Name}"]
+                    t.sleep(5)
+                except:
+                    t.sleep(2)
+                    # print("test")
+                    Functions.copy_assignments(driver,assignments,Contact_Name,Email)
+                    unassigned_users = unassigned_users[unassigned_users["Name"] != f"{Contact_Name}"]
+                    t.sleep(5)
+            else:
+                print (f"failed to delete {Contact_Name}'s assignments")
         except:
+            driver.refresh()
             print(f"failed to edit {Contact_Name}. Ensure they still have assignments")
     
     if len(unassigned_users) > 0:

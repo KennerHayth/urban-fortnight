@@ -29,12 +29,13 @@ def FLPA_sign_in(driver):
     t.sleep(4)
     username_field=driver.find_element(By.NAME,"Username")
     password_field=driver.find_element(By.NAME,"Password")
-    signIn_button=driver.find_element(By.NAME,"Submit")
     username_field.clear()
     password_field.clear()
     username_field.send_keys(FLPA_GP_username)
     password_field.send_keys(FLPA_password)
-    signIn_button.click()
+    WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.NAME, "Submit"))
+    ).click()
     t.sleep(8)
 
 def select_all_assignments(driver):
@@ -65,7 +66,9 @@ def select_first_matching_email(driver, target_email):
 
         # Click the first matching element
         print(f"Clicking on: {matching_elements[0].text}")
-        matching_elements[0].click()
+        WebDriverWait(driver, 10).until(
+            EC.element_to_be_clickable((By.XPATH, "/html/body/div[6]/div[2]/div/div[2]/form/fieldset/div[2]/div/div/div/ul/li"))
+        ).click()
         return True
 
     except Exception as e:
@@ -93,8 +96,11 @@ def check_for_duplicate_name(driver, target_name):
 def copy_assignments(driver,Link, Name,Email):
     driver.get(Link)
     driver.maximize_window()
+    driver.refresh()
     t.sleep(10)
-    Copy_button = driver.find_element(By.XPATH, '/html/body/div[5]/div[3]/div[3]/div/div/div[1]/div[14]')
+    Copy_button = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.XPATH, '/html/body/div[5]/div[3]/div[3]/div/div/div[1]/div[14]'))
+    )
     Copy_button.click()
     t.sleep(5)
     select_all_assignments(driver)
@@ -114,24 +120,24 @@ def copy_assignments(driver,Link, Name,Email):
         select_first_matching_email(driver,Email)
 
     t.sleep(4)
-    print("test")
+    # print("test")
 
     confirm_button = WebDriverWait(driver, 10).until(
-    EC.element_to_be_clickable((By.XPATH, "/html/body/div[6]/div[2]/div/div[3]/input[1]"))
+        EC.element_to_be_clickable((By.XPATH, "/html/body/div[6]/div[2]/div/div[3]/input[1]"))
     )   
-
-    print("test2")
-    # Click the button
     confirm_button.click()
-    print("test3")
+    # print("test3")
 
 def delete_assignments(driver,Link, Name,unassigned_users):
     driver.get(Link)
     driver.maximize_window()
+    driver.refresh()
 
-    t.sleep(3)
+    t.sleep(7)
 
-    Delete_button = driver.find_element(By.XPATH, '//*[@id="actionbar"]/div/div[1]/div[13]')
+    Delete_button = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.XPATH, '//*[@id="actionbar"]/div/div[1]/div[13]'))
+    )
     Delete_button.click()
 
     t.sleep(3)

@@ -23,13 +23,28 @@ def main():
 
     change_list = []
 
-    # Assignments = pd.read_csv(Shira.Newest_file(r"J:\Admin & Plans Unit\Recovery Systems\2. Reports\4. Data Files\FLPA Assignments"), encoding="latin1")
-    Assignments = pd.read_csv(Shira.Newest_file(r"J:\Admin & Plans Unit\Recovery Systems\1. Systems\Python Scripts\Morning Script\modules\Kenner_Rep\Contractor_Assignments\Test cases\Assignments"), encoding="latin1")
+    Assignments = pd.read_csv(Shira.Newest_file(r"J:\Admin & Plans Unit\Recovery Systems\2. Reports\4. Data Files\FLPA Assignments"), encoding="latin1")
+    Contact_Export = pd.read_csv(Shira.Newest_file(r"J:\Admin & Plans Unit\Recovery Systems\2. Reports\4. Data Files\FLPA All Contacts"), encoding="latin1")
+    # Assignments = pd.read_csv(Shira.Newest_file(r"J:\Admin & Plans Unit\Recovery Systems\1. Systems\Python Scripts\Morning Script\modules\Kenner_Rep\Contractor_Assignments\Test cases\Assignments"), encoding="latin1")
+    Contractors_unassigned = Contact_Export[["Email","First Name","Last Name","Group(s)","Applicant?", "Item Link"]]   
+
+
+    Contractors_unassigned = Contractors_unassigned[Contractors_unassigned["Group(s)"] == "Contractor"]
+
+    Contractors_unassigned = Contractors_unassigned[Contractors_unassigned["Applicant?"] == "N"]
+
+    Contractors_unassigned = Contractors_unassigned[["Email"]]
+  
 
 
     Assignments = Assignments[Assignments["Contact Group(s)"] == "Contractor"]
 
     Assignments = Assignments[["Grant", "County", "Applicant", "Position(s)", "Contact Email"]]
+
+    Contractors_unassigned = Contractors_unassigned[~Contractors_unassigned["Email"].isin(Assignments["Contact Email"])]
+
+
+
 
     print(Assignments)
 
@@ -55,12 +70,12 @@ def main():
         "KPMG": "samanthasicard@kpmg.com",
         "RSM": "regina.oliver@rsmus.com",
         "IEM": "shaun.mcgrath@iem.com",
-        "EY": "nadya.semenova@ey.com",
+        "EY": "Nadya.Semenova@ey.com",
         "Deloitte": "chbreed@deloitte.com",
         "Horne": "sam.hurst@horne.com",
         "DCMC": "mrobinson@dcmcpartners.com",
-        "Tidal_Basin": "rwright@tidalbasin.rphc.com",
-        "THF": "bbechtel@thf-cpa.com",
+        "Tidal_Basin": "asupriana@tidalbasin.rphc.com",
+        "THF": "Bbechtel@thf-cpa.com",
         "CRI": "lluong@cricpa.com"
     }
 
@@ -92,15 +107,16 @@ def main():
 
             # match = current_assignments[["Grant", "County", "Applicant"]].equals(default_assignments[["Grant", "County", "Applicant"]])
             # finding missing rows
-            missing_rows = pd.concat([default_assignments, current_assignments]).drop_duplicates(subset=['Grant', 'County', 'Applicant'], keep=False)
+            missing_rows = pd.concat([default_assignments, current_assignments]).drop_duplicates(subset=['Grant', 'County', 'Applicant', "Position(s)"], keep=False)
             # Count missing rows
             missing_count = len(missing_rows)
 
             if missing_count == 0:
-                print (f"{value} has correct assignments")
+                # print (f"{value} has correct assignments")
+                continue
             else:
                 change_list.append(value)
-                print(f"{value} had {missing_count} wrong assignments")
+                # print(f"{value} had {missing_count} wrong assignments")
 
 
     def execute_funcations():
@@ -128,8 +144,13 @@ def main():
     execute_funcations()
 
     change_list = pd.DataFrame(change_list, columns=["Email"])
-    change_list = map_assignment_emails(change_list, company_emails, assignment_accounts)
 
+    change_list = pd.concat([change_list, Contractors_unassigned], ignore_index=True)
+
+    change_list.to_csv(r"J:\Admin & Plans Unit\Recovery Systems\1. Systems\Python Scripts\Morning Script\modules\Kenner_Rep\Contractor_Assignments\Assignment Changes\Pending_Changes.csv", index=False)
+
+
+    change_list = map_assignment_emails(change_list, company_emails, assignment_accounts)
 
     return change_list
 
